@@ -29,7 +29,7 @@
  			<li>À propos</li>
  		</ul>
  	</div>
- 	<table class="frpricipal"> 
+ 	<table id="frpricipal"> 
  		<thead>
  			<tr class="ligne-table">
  				<th id="Order">Order</th>
@@ -66,6 +66,21 @@
  			</tr><br/></br>
  		</thead>
  	</table>
-	<script type="text/javascript" src="jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="jquery-2.1.4.min.js">
+
+	var newrow=$("<td class="Rownumber" width=40>+i+</td>
+ 				<td><input type="text" class="Title" ></input></td>
+ 				<td class="type">
+ 					<select>
+ 						<option value="int">int</option>
+  						<option value="Varchar">Varchar</option>
+  						<option value="date">Date</option>
+					</select>
+				</td>
+				<td class="Exemple"><output value="SaidValeur"></output></td>
+ 				<td class="del"><input type="checkbox"></td>
+ 			</tr><br/></br>");
+	$("#frpricipal").append("newrow");
+	</script>
 </body>
 </html>
