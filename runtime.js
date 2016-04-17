@@ -339,16 +339,16 @@
 			return intGen(count, min, max);
 		}
 		else if (type == 'date') {
-			var min = new Date(column.find('.min').val());
-			var max = new Date(column.find('.max').val());
+			var min = column.find('.min').val();
+			var max = column.find('.max').val();
 
-			return dateGen(count, min, max);
+			return dateGen(count, (min == '') ? new Date() : new Date(min), (max == '') ? new Date() : new Date(max));
 		}
 		else if (type == 'datetime') {
 			var min = new Date(column.find('.min').val());
 			var max = new Date(column.find('.max').val());
 
-			return dateTimeGen(count, min, max);
+			return dateTimeGen(count, (min == '') ? new Date() : new Date(min), (max == '') ? new Date() : new Date(max));
 		}
 		else if (type == 'ref') {
 			var refTable = column.find('.table-list').val();
