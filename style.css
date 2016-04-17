@@ -1,0 +1,18 @@
+.hidden {
+	display: none;
+}
+
+.table {
+	border: 1px solid #18C;
+	margin: 2px;
+}
+
+.table .title {
+	background: #18C;
+	margin: 1px;
+	color: #FFF;
+}
+
+.column:first-child .col-up, .column:last-child .col-down {
+	display: none;
+}
