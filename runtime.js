@@ -374,6 +374,7 @@
 
 		if (r == true) {
 			$('#tables').empty();
+			$('#output').empty();
 			tableIdCount = 0;
 			columnIdCount = 0;
 		}
