@@ -292,7 +292,12 @@
 
 		var idx = targetColumn.index();
 
-		if (sequencial) {
+		if (current[tableID].length) {
+			for (var i = 0; i < count; ++i) {
+				entries[i] = 'NULL';
+			}
+		}
+		else if (sequencial) {
 			for (var i = 0; i < count; ++i) {
 				entries[i] = current[tableID][idx][i % targetEntryCount];
 			}
