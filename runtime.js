@@ -507,7 +507,7 @@
 	.on('click', '.reset', function() {
 		var r = confirm('Êtes-vous sûre de vouloir réinitialiser tout?');
 
-		if (r == true) {
+		if (r === true) {
 			$('#tables').empty();
 			$('#output').empty();
 			tableIdCount = 0;
