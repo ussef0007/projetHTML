@@ -1,3 +1,10 @@
+<!--
+TDI21
+Conception, design et programmation par
+Saïd DERMOUMI
+Youssef EL MANSOURI
+-->
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,122 +14,137 @@
 	<script type="text/javascript" src="jquery-1.12.2.min.js"></script>
 </head>
 <body>
-	<!-- Barre d'outils -->
-	<div id="toolbar">
-		<a class="add-table" href="#">Ajouter table</a>
-		<a class="reset" href="#">Réinitialiser</a>
-		<a class="build" href="#">Générer</a>
-	</div>
-
-	<!-- Conteneur des tables -->
-	<div id="tables">
-	</div>
-
-	<!-- Element model d'une table -->
-	<div id="table-elem" class="table hidden">
-		<div class="title">
-			Nom de table : <input type="text" class="nom-table"/>
-			Nb. d'enregistrements : <input type="number" class="entry-count" min="1"/>
+	<header>
+		<div class="container">
+			<h1>Ficti</h1>
+			<h2>Générateur de données fictives SQL</h2>
 		</div>
-		<div class="tools">
-			<a class="add-column" href="#">Add column</a>
-			<a class="remove-table" href="#">Remove</a>
+	</header>
+
+	<nav>
+
+	</nav>
+<!-- <h1>Gere mon code Sql</h1> -->
+
+	<!-- Barre d'outils -->	
+	<main>
+		<div id="toolbar">
+			<a class="add-table" href="#">Ajouter table</a>
+			<a class="reset" href="#">Réinitialiser</a>
+		 	<a class="build" href="#">Générer</a>
 		</div>
-		<table class="columns">
-			<thead>
-				<td>Nom de colonne</td>
-				<td>Type</td>
-				<td>Paramètres</td>
-				<td>PK</td>
-				<td>NULL</td>
-				<td></td>
-				<td></td>
-			</thead>
-			<!-- Element model d'une colonne -->
-			<tr id="column-elem" class="column hidden">
-				<td class="col-1"><input type="text" value="" class="nom-column"/></td>
-				<td class="col-2">
-					<select class='column-type'>
-						<option value="text">Text</option>
-						<option value="seq">Séquence</option>
-						<option value="decimal">Decimal</option>
-						<option value="integer">Entier</option>
-						<option value="date">Date</option>
-						<option value="datetime">DateTime</option>
-						<option value="ref">Référence</option>
-					</select>
-				</td>
-				<td class="col-3">
 
-				</td>
-				<td class="pk">
-					<input type="checkbox"/>
-				</td>
-				<td class="null">
-					<input type="checkbox" checked/>
-				</td>
-				<td class="remove">
-					<a href="#">X</a>
-				</td>
-				<td class="order">
-					<a href="#" class="col-up">↑</a>
-					<a href="#" class="col-down">↓</a>
-				</td>
-			</tr>
-		</table>
-	</div>
+		<!-- Conteneur des tables -->
+		<div id="tables">
+		</div>
 
-	<div id="text-options-elem" class="hidden">
-		Taille (0 si TEXT): <input type="number" value="50" class="size" min="0"/>
-		<select class="presets">
-			<option value="empty">Vide</option>
-			<option value="nom">Noms</option>
-			<option value="prenom">Prénoms</option>
-			<option value="pays">Pays</option>
-			<option value="villes">Villes</option>
-			<option value="random">Aléatoire</option>
-		</select>
-	</div>
+		<!-- Element model d'une table -->
+		<div id="table-elem" class="table hidden">
+			<div class="title">
+				Nom de table : <input type="text" class="nom-table"/>
+				Nb. d'enregistrements : <input type="number" class="entry-count" min="1"/>
+			</div>
+			<div class="tools">
+				<a class="add-column" href="#">Ajouter colonne</a>
+				<a class="remove-table" href="#">Suppr.</a>
+			</div>
+			<table class="columns">
+				<thead>
+					<td class="col-1">Colonne</td>
+					<td class="col-2">Type</td>
+					<td class="col-3">Paramètres</td>
+					<td>PK</td>
+					<td>NULL</td>
+					<td></td>
+					<td></td>
+				</thead>
+				<!-- Element model d'une colonne -->
+				<tbody>
+					<tr id="column-elem" class="column hidden">
+						<td class="col-1"><input type="text" value="" class="nom-column"/></td>
+						<td class="col-2">
+							<select class='column-type'>
+								<option value="text">Text</option>
+								<option value="seq">Séquence</option>
+								<option value="decimal">Decimal</option>
+								<option value="integer">Entier</option>
+								<option value="date">Date</option>
+								<option value="datetime">DateTime</option>
+								<option value="ref">Référence</option>
+							</select>
+						</td>
+						<td class="col-3">
 
-	<div id="seq-options-elem" class="hidden">
-		Début : <input type="number" class="start" value="1"/>
-		Pas : <input type="number" class="step" value="1"/>
-		Prefixe : <input type="text" class="prefix"/> 
-		Suffixe : <input type="text" class="suffix"/>
-	</div>
+						</td>
+						<td class="pk">
+							<input type="checkbox"/>
+						</td>	
+						<td class="null">
+							<input type="checkbox" checked/>
+						</td>
+						<td class="remove">
+							<a href="#">X</a>
+						</td>
+						<td class="order">
+							<a href="#" class="col-up">↑</a>
+							<a href="#" class="col-down">↓</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 
-	<div id="decimal-options-elem" class="hidden">
-		Min : <input type="number" class="min" value="0"/>
-		Max : <input type="number" class="max" value="1"/>
-	</div>
+		<div id="text-options-elem" class="hidden">
+			Taille (0 si TEXT): <input type="number" value="50" class="size" min="0"/>
+			<select class="presets">
+				<option value="empty">Vide</option>
+				<option value="nom">Noms</option>
+				<option value="prenom">Prénoms</option>
+				<option value="pays">Pays</option>
+				<option value="villes">Villes</option>
+				<option value="random">Aléatoire</option>
+			</select>
+		</div>
 
-	<div id="integer-options-elem" class="hidden">
-		Min : <input type="number" class="min" value="0"/>
-		Max : <input type="number" class="max" value="100"/>
-	</div>
+		<div id="seq-options-elem" class="hidden">
+			Début : <input type="number" class="start" value="1"/>
+			Pas : <input type="number" class="step" value="1"/>
+			Prefixe : <input type="text" class="prefix"/> 
+			Suffixe : <input type="text" class="suffix"/>
+		</div>
 
-	<div id="date-options-elem" class="hidden">
-		Min : <input type="date" class="min"/>
-		Max : <input type="date" class="max"/>
-	</div>
+		<div id="decimal-options-elem" class="hidden">
+			Min : <input type="number" class="min" value="0"/>
+			Max : <input type="number" class="max" value="1"/>
+		</div>
 
-	<div id="datetime-options-elem" class="hidden">
-		<!-- Apparemment même Google Chrome et Firefox ne supportent toujours pas type="datetime" des spécifications W3C -->
-		Min : <input type="date" class="min"/>
-		Max : <input type="date" class="max"/>
-	</div>
+		<div id="integer-options-elem" class="hidden">
+			Min : <input type="number" class="min" value="0"/>
+			Max : <input type="number" class="max" value="100"/>
+		</div>
 
-	<div id="ref-options-elem" class="hidden">
-		<select class="table-list"></select>
-		<select class="column-list"></select>
-		<input type="checkbox" class="sequencial"/> Référencer en sequence?
-	</div>
+		<div id="date-options-elem" class="hidden">
+			Min : <input type="date" class="min"/>
+			Max : <input type="date" class="max"/>
+		</div>
 
-	<code>
-	<pre id="output">
+		<div id="datetime-options-elem" class="hidden">
+			<!-- Apparemment même Google Chrome et Firefox ne supportent toujours pas type="datetime" des spécifications W3C -->
+			Min : <input type="date" class="min"/>
+			Max : <input type="date" class="max"/>
+		</div>
 
-	</pre>
-	</code>
+		<div id="ref-options-elem" class="hidden">
+			<select class="table-list"></select>
+			<select class="column-list"></select>
+			<input type="checkbox" class="sequencial"/> Référencer en sequence?
+		</div>
+
+		<code>
+		<textarea id="output"></textarea>
+		</code>
+	</main>
+	
 
 	<script type="text/javascript" src="runtime.js"></script>
 </body>

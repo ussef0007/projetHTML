@@ -1,4 +1,93 @@
 (function() {
+	// Verifier si le mode d'affichage de creation de table et actif
+	// Si l'on ouvre la page avec #createTable à la fin, on affiche aussi le code de création de tables
+	// ex: http://localhost/ficti/#createTable
+	function createTable() {
+		var create = sessionStorage.getItem('createTable');
+		if (create == undefined) {
+			create = window.location.toString().toLowerCase().indexOf('#createtable') != -1;
+			sessionStorage.setItem('createTable', create);
+		}
+		return create;
+	}
+
+	// Enregistre les données lorsqu'on quitte la page
+	$(window).on('beforeunload', function() {
+		var tables = [];
+		$('.table').each(function() {
+			var columns = [];
+			$(this).find('.column').each(function() {
+				var type = $(this).find('.column-type').val();
+				var params = {};
+				if (type == 'text') {
+					params.size = $(this).find('.size').val();
+					params.preset = $(this).find('.presets').val();
+				}
+				else if (type == 'seq') {
+					params.start = $(this).find('.start').val();
+					params.step = $(this).find('.step').val();
+					params.prefix = $(this).find('.prefix').val();
+					params.suffix = $(this).find('.suffix').val();
+				}
+				else if (type == 'decimal' || type == 'integer' || type == 'date' || type == 'datetime') {
+					params.min = $(this).find('.min').val();
+					params.max = $(this).find('.max').val();
+				}
+				else if (type == 'ref') {
+					params.table = $(this).find('.table-list').val();
+					params.column = $(this).find('.column-list').val();
+					params.sequencial = $(this).find('.sequencial').prop('checked');
+				}
+
+				var colData = {
+					id: $(this).attr('id'),
+					name: $(this).find('.nom-column').val(),
+					type: type,
+					params: params,
+					pk: $(this).find('.pk input').prop('checked'),
+					isNull: $(this).find('.null input').prop('checked')
+				};
+
+				columns.push(colData);
+			})
+
+			tables.push({
+				id: $(this).attr('id'),
+				name: $(this).find('.nom-table').val(),
+				entryCount: $(this).find('.entry-count').val(),
+				columns: columns
+			});
+		});
+
+		localStorage.setItem('tables', JSON.stringify(tables));
+	})
+	.on('load', function() {
+		var tables = localStorage.getItem('tables');
+		if (tables) {
+			// console.log(tables);
+			tables = JSON.parse(tables);
+			for(var n in tables) {
+				var table = tables[n];
+				addTable(table.id, table.name, table.entryCount, table.columns);
+			}
+
+			updateTableSchema();
+
+			// Update references
+			for (var i in tables) {
+				for (var j in tables[i].columns) {
+					var col = tables[i].columns[j];
+					if (col.type == 'ref') {
+						var tableList = $('#' + col.id).find('.table-list');
+						tableList.val(col.params.table);
+						updateTableSchemaColumn(tableList);
+						$('#' + col.id).find('.column-list').val(col.params.column);
+					}
+				} 
+			}
+		}
+	});
+
 	// Liste de noms pour la génération automatique
 	var listePays = ["AFGHANISTAN", "ALBANIA", "ALGERIA", "ANDORRA", "ANGOLA", "ANTIGUA & DEPS", "ARGENTINA", "ARMENIA", "AUSTRALIA", "AUSTRIA", "AZERBAIJAN", "BAHAMAS", "BAHRAIN", "BANGLADESH", "BARBADOS", "BELARUS", "BELGIUM", "BELIZE", "BENIN", "BHUTAN", "BOLIVIA", "BOSNIA HERZEGOVINA", "BOTSWANA", "BRAZIL", "BRUNEI", "BULGARIA", "BURKINA", "BURUNDI", "CAMBODIA", "CAMEROON", "CANADA", "CAPE VERDE", "CENTRAL AFRICAN REP", "CHAD", "CHILE", "CHINA", "COLOMBIA", "COMOROS", "CONGO", "CONGO {DEMOCRATIC REP}", "COSTA RICA", "CROATIA", "CUBA", "CYPRUS", "CZECH REPUBLIC", "DENMARK", "DJIBOUTI", "DOMINICA", "DOMINICAN REPUBLIC", "EAST TIMOR", "ECUADOR", "EGYPT", "EL SALVADOR", "EQUATORIAL GUINEA", "ERITREA", "ESTONIA", "ETHIOPIA", "FIJI", "FINLAND", "FRANCE", "GABON", "GAMBIA", "GEORGIA", "GERMANY", "GHANA", "GREECE", "GRENADA", "GUATEMALA", "GUINEA", "GUINEA-BISSAU", "GUYANA", "HAITI", "HONDURAS", "HUNGARY", "ICELAND", "INDIA", "INDONESIA", "IRAN", "IRAQ", "IRELAND {REPUBLIC}", "ISRAEL", "ITALY", "IVORY COAST", "JAMAICA", "JAPAN", "JORDAN", "KAZAKHSTAN", "KENYA", "KIRIBATI", "KOREA NORTH", "KOREA SOUTH", "KOSOVO", "KUWAIT", "KYRGYZSTAN", "LAOS", "LATVIA", "LEBANON", "LESOTHO", "LIBERIA", "LIBYA", "LIECHTENSTEIN", "LITHUANIA", "LUXEMBOURG", "MACEDONIA", "MADAGASCAR", "MALAWI", "MALAYSIA", "MALDIVES", "MALI", "MALTA", "MARSHALL ISLANDS", "MAURITANIA", "MAURITIUS", "MEXICO", "MICRONESIA", "MOLDOVA", "MONACO", "MONGOLIA", "MONTENEGRO", "MOROCCO", "MOZAMBIQUE", "MYANMAR, {BURMA}", "NAMIBIA", "NAURU", "NEPAL", "NETHERLANDS", "NEW ZEALAND", "NICARAGUA", "NIGER", "NIGERIA", "NORWAY", "OMAN", "PAKISTAN", "PALAU", "PANAMA", "PAPUA NEW GUINEA", "PARAGUAY", "PERU", "PHILIPPINES", "POLAND", "PORTUGAL", "QATAR", "ROMANIA", "RUSSIAN FEDERATION", "RWANDA", "ST KITTS & NEVIS", "ST LUCIA", "SAINT VINCENT & THE GRENADINES", "SAMOA", "SAN MARINO", "SAO TOME & PRINCIPE", "SAUDI ARABIA", "SENEGAL", "SERBIA", "SEYCHELLES", "SIERRA LEONE", "SINGAPORE", "SLOVAKIA", "SLOVENIA", "SOLOMON ISLANDS", "SOMALIA", "SOUTH AFRICA", "SOUTH SUDAN", "SPAIN", "SRI LANKA", "SUDAN", "SURINAME", "SWAZILAND", "SWEDEN", "SWITZERLAND", "SYRIA", "TAIWAN", "TAJIKISTAN", "TANZANIA", "THAILAND", "TOGO", "TONGA", "TRINIDAD & TOBAGO", "TUNISIA", "TURKEY", "TURKMENISTAN", "TUVALU", "UGANDA", "UKRAINE", "UNITED ARAB EMIRATES", "UNITED KINGDOM", "UNITED STATES", "URUGUAY", "UZBEKISTAN", "VANUATU", "VATICAN CITY", "VENEZUELA", "VIETNAM", "YEMEN", "ZAMBIA", "ZIMBABWE"];
 	var listeVilles = ["ABERDEEN", "ABILENE", "AKRON", "ALBANY", "ALBUQUERQUE", "ALEXANDRIA", "ALLENTOWN", "AMARILLO", "ANAHEIM", "ANCHORAGE", "ANN ARBOR", "ANTIOCH", "APPLE VALLEY", "APPLETON", "ARLINGTON", "ARVADA", "ASHEVILLE", "ATHENS", "ATLANTA", "ATLANTIC CITY", "AUGUSTA", "AURORA", "AUSTIN", "BAKERSFIELD", "BALTIMORE", "BARNSTABLE", "BATON ROUGE", "BEAUMONT", "BEL AIR", "BELLEVUE", "BERKELEY", "BETHLEHEM", "BILLINGS", "BIRMINGHAM", "BLOOMINGTON", "BOISE", "BOISE CITY", "BONITA SPRINGS", "BOSTON", "BOULDER", "BRADENTON", "BREMERTON", "BRIDGEPORT", "BRIGHTON", "BROWNSVILLE", "BRYAN", "BUFFALO", "BURBANK", "BURLINGTON", "CAMBRIDGE", "CANTON", "CAPE CORAL", "CARROLLTON", "CARY", "CATHEDRAL CITY", "CEDAR RAPIDS", "CHAMPAIGN", "CHANDLER", "CHARLESTON", "CHARLOTTE", "CHATTANOOGA", "CHESAPEAKE", "CHICAGO", "CHULA VISTA", "CINCINNATI", "CLARKE COUNTY", "CLARKSVILLE", "CLEARWATER", "CLEVELAND", "COLLEGE STATION", "COLORADO SPRINGS", "COLUMBIA", "COLUMBUS", "CONCORD", "CORAL SPRINGS", "CORONA", "CORPUS CHRISTI", "COSTA MESA", "DALLAS", "DALY CITY", "DANBURY", "DAVENPORT", "DAVIDSON COUNTY", "DAYTON", "DAYTONA BEACH", "DELTONA", "DENTON", "DENVER", "DES MOINES", "DETROIT", "DOWNEY", "DULUTH", "DURHAM", "EL MONTE", "EL PASO", "ELIZABETH", "ELK GROVE", "ELKHART", "ERIE", "ESCONDIDO", "EUGENE", "EVANSVILLE", "FAIRFIELD", "FARGO", "FAYETTEVILLE", "FITCHBURG", "FLINT", "FONTANA", "FORT COLLINS", "FORT LAUDERDALE", "FORT SMITH", "FORT WALTON BEACH", "FORT WAYNE", "FORT WORTH", "FREDERICK", "FREMONT", "FRESNO", "FULLERTON", "GAINESVILLE", "GARDEN GROVE", "GARLAND", "GASTONIA", "GILBERT", "GLENDALE", "GRAND PRAIRIE", "GRAND RAPIDS", "GRAYSLAKE", "GREEN BAY", "GREENBAY", "GREENSBORO", "GREENVILLE", "GULFPORT-BILOXI", "HAGERSTOWN", "HAMPTON", "HARLINGEN", "HARRISBURG", "HARTFORD", "HAVRE DE GRACE", "HAYWARD", "HEMET", "HENDERSON", "HESPERIA", "HIALEAH", "HICKORY", "HIGH POINT", "HOLLYWOOD", "HONOLULU", "HOUMA", "HOUSTON", "HOWELL", "HUNTINGTON", "HUNTINGTON BEACH", "HUNTSVILLE", "INDEPENDENCE", "INDIANAPOLIS", "INGLEWOOD", "IRVINE", "IRVING", "JACKSON", "JACKSONVILLE", "JEFFERSON", "JERSEY CITY", "JOHNSON CITY", "JOLIET", "KAILUA", "KALAMAZOO", "KANEOHE", "KANSAS CITY", "KENNEWICK", "KENOSHA", "KILLEEN", "KISSIMMEE", "KNOXVILLE", "LACEY", "LAFAYETTE", "LAKE CHARLES", "LAKELAND", "LAKEWOOD", "LANCASTER", "LANSING", "LAREDO", "LAS CRUCES", "LAS VEGAS", "LAYTON", "LEOMINSTER", "LEWISVILLE", "LEXINGTON", "LINCOLN", "LITTLE ROCK", "LONG BEACH", "LORAIN", "LOS ANGELES", "LOUISVILLE", "LOWELL", "LUBBOCK", "MACON", "MADISON", "MANCHESTER", "MARINA", "MARYSVILLE", "MCALLEN", "MCHENRY", "MEDFORD", "MELBOURNE", "MEMPHIS", "MERCED", "MESA", "MESQUITE", "MIAMI", "MILWAUKEE", "MINNEAPOLIS", "MIRAMAR", "MISSION VIEJO", "MOBILE", "MODESTO", "MONROE", "MONTEREY", "MONTGOMERY", "MORENO VALLEY", "MURFREESBORO", "MURRIETA", "MUSKEGON", "MYRTLE BEACH", "NAPERVILLE", "NAPLES", "NASHUA", "NASHVILLE", "NEW BEDFORD", "NEW HAVEN", "NEW LONDON", "NEW ORLEANS", "NEW YORK", "NEW YORK CITY", "NEWARK", "NEWBURGH", "NEWPORT NEWS", "NORFOLK", "NORMAL", "NORMAN", "NORTH CHARLESTON", "NORTH LAS VEGAS", "NORTH PORT", "NORWALK", "NORWICH", "OAKLAND", "OCALA", "OCEANSIDE", "ODESSA", "OGDEN", "OKLAHOMA CITY", "OLATHE", "OLYMPIA", "OMAHA", "ONTARIO", "ORANGE", "OREM", "ORLANDO", "OVERLAND PARK", "OXNARD", "PALM BAY", "PALM SPRINGS", "PALMDALE", "PANAMA CITY", "PASADENA", "PATERSON", "PEMBROKE PINES", "PENSACOLA", "PEORIA", "PHILADELPHIA", "PHOENIX", "PITTSBURGH", "PLANO", "POMONA", "POMPANO BEACH", "PORT ARTHUR", "PORT ORANGE", "PORT SAINT LUCIE", "PORT ST. LUCIE", "PORTLAND", "PORTSMOUTH", "POUGHKEEPSIE", "PROVIDENCE", "PROVO", "PUEBLO", "PUNTA GORDA", "RACINE", "RALEIGH", "RANCHO CUCAMONGA", "READING", "REDDING", "RENO", "RICHLAND", "RICHMOND", "RICHMOND COUNTY", "RIVERSIDE", "ROANOKE", "ROCHESTER", "ROCKFORD", "ROSEVILLE", "ROUND LAKE BEACH", "SACRAMENTO", "SAGINAW", "SAINT LOUIS", "SAINT PAUL", "SAINT PETERSBURG", "SALEM", "SALINAS", "SALT LAKE CITY", "SAN ANTONIO", "SAN BERNARDINO", "SAN BUENAVENTURA", "SAN DIEGO", "SAN FRANCISCO", "SAN JOSE", "SANTA ANA", "SANTA BARBARA", "SANTA CLARA", "SANTA CLARITA", "SANTA CRUZ", "SANTA MARIA", "SANTA ROSA", "SARASOTA", "SAVANNAH", "SCOTTSDALE", "SCRANTON", "SEASIDE", "SEATTLE", "SEBASTIAN", "SHREVEPORT", "SIMI VALLEY", "SIOUX CITY", "SIOUX FALLS", "SOUTH BEND", "SOUTH LYON", "SPARTANBURG", "SPOKANE", "SPRINGDALE", "SPRINGFIELD", "ST. LOUIS", "ST. PAUL", "ST. PETERSBURG", "STAMFORD", "STERLING HEIGHTS", "STOCKTON", "SUNNYVALE", "SYRACUSE", "TACOMA", "TALLAHASSEE", "TAMPA", "TEMECULA", "TEMPE", "THORNTON", "THOUSAND OAKS", "TOLEDO", "TOPEKA", "TORRANCE", "TRENTON", "TUCSON", "TULSA", "TUSCALOOSA", "TYLER", "UTICA", "VALLEJO", "VANCOUVER", "VERO BEACH", "VICTORVILLE", "VIRGINIA BEACH", "VISALIA", "WACO", "WARREN", "WASHINGTON", "WATERBURY", "WATERLOO", "WEST COVINA", "WEST VALLEY CITY", "WESTMINSTER", "WICHITA", "WILMINGTON", "WINSTON", "WINTER HAVEN", "WORCESTER", "YAKIMA", "YONKERS", "YORK", "YOUNGSTOWN"];
@@ -41,31 +130,76 @@
 	}
 
 	// Fonction pour ajouter une nouvelle table
-	function addTable() {
+	function addTable(id, name, entryCount, cols) {
 		tableIdCount++;
 
-		var tableName = 'Table_' + tableIdCount;
+		name = name || 'Table_' + tableIdCount;
+		id = id || 'tab-' + tableIdCount; 
 
 		var table = tableElem.clone()
-			.attr('id', 'tab-' + tableIdCount)
+			.attr('id', id)
 			.appendTo('#tables');
 
-		table.find('.nom-table').val(tableName);
-		table.find('.entry-count').val(~~rand(10, 100));
+		table.find('.nom-table').val(name);
+		table.find('.entry-count').val(entryCount || ~~rand(10, 100));
+
+		if (cols) {
+			for(var i in cols) {
+				var col = cols[i];
+				addColumn(table, col.id, col.name, col.type, col.params, col.pk, col.isNull)
+			}
+		}
+
+		return table;
 	}
 
 	// Fonction pour ajouter un nouvelle colomn à l'élément table donné
-	function addColumn(table) {
+	function addColumn(table, id, name, type, params, pk, isNull) {
 		columnIdCount++;
 
-		var columnName = "Column_" + columnIdCount;
+		name = columnName = name || "Column_" + columnIdCount;
+		id = id || 'col-' + columnIdCount;
 
 		var col = columnElem.clone()
-			.attr('id', 'col-' + columnIdCount)
+			.attr('id', id)
 			.appendTo(table.find('.columns'));
 
-		col.find('.nom-column').val(columnName);
-		col.find('.col-3').append(textOptionsElem.clone());
+		type = type || 'text';
+
+		col.find('.nom-column').val(name);
+		col.find('.column-type').val(type);
+		if (pk !== undefined) col.find('.pk input').prop('checked', pk);
+		if (isNull !== undefined) col.find('.null input').prop('checked', isNull);
+
+		if (pk === true) {
+			col.find('.null input').prop('disabled', true);
+		}
+
+		col.find('.col-3').append(optionElem[type].clone());
+
+		if (params) {
+			if (type == 'text') {
+				col.find('.size').val(params.size);
+				col.find('.presets').val(params.preset);
+			}
+			else if (type == 'seq') {
+				col.find('.start').val(params.start);
+				col.find('.step').val(params.step);
+				col.find('.prefix').val(params.prefix);
+				col.find('.suffix').val(params.suffix);
+			}
+			else if (type == 'decimal' || type == 'integer' || type == 'date' || type == 'datetime') {
+				col.find('.min').val(params.min);
+				col.find('.max').val(params.max);
+			}
+			// else if (type == 'ref') {
+			// 	var tableList = col.find('.table-list');
+			// 	tableList.val(params.table);
+			// 	col.find('.column-list').val(params.column);
+			// 	col.find('.sequencial').prop('checked', params.sequencial);
+
+			// }
+		}
 	}
 
 	// Fonction appelée à chaque ajout/suppressier de tables ou de colonnes
@@ -230,8 +364,9 @@
 	function seqGen(count, start, step, prefix, suffix) {
 		var entries = new Array(count);
 
+		var isString = prefix.length != 0 || suffix.length != 0;
 		for (var i = 0; i < count; ++i) {
-			entries[i] = '' + prefix + (start + i*step) + suffix;
+			entries[i] = (isString ? "'" : '') + prefix + (start + i*step) + suffix + (isString ? "'" : '');
 		}
 
 		return entries;
@@ -292,12 +427,7 @@
 
 		var idx = targetColumn.index();
 
-		if (current[tableID].length) {
-			for (var i = 0; i < count; ++i) {
-				entries[i] = 'NULL';
-			}
-		}
-		else if (sequencial) {
+		if (sequencial) {
 			for (var i = 0; i < count; ++i) {
 				entries[i] = current[tableID][idx][i % targetEntryCount];
 			}
@@ -350,8 +480,8 @@
 			return dateGen(count, (min == '') ? new Date() : new Date(min), (max == '') ? new Date() : new Date(max));
 		}
 		else if (type == 'datetime') {
-			var min = column.find('.min').val();
-			var max = column.find('.max').val();
+			var min = new Date(column.find('.min').val());
+			var max = new Date(column.find('.max').val());
 
 			return dateTimeGen(count, (min == '') ? new Date() : new Date(min), (max == '') ? new Date() : new Date(max));
 		}
@@ -495,13 +625,15 @@
 
 				if (columns.length == 0) return;
 
-				output += 'CREATE TABLE ' + nom + ' (<br/>' + columns.join(',<br/>');
+				if (createTable()) {
+					output += 'CREATE TABLE ' + nom + ' (\n' + columns.join(',\n');
 
-				if (pks.length > 0) {
-					output += ',<br/>&nbsp;&nbsp;&nbsp;&nbsp;CONSTRAINT pk_' + nom + ' PRIMARY KEY(' + pks.join(', ') + ')';
+					if (pks.length > 0) {
+						output += ',\n&nbsp;&nbsp;&nbsp;&nbsp;CONSTRAINT pk_' + nom + ' PRIMARY KEY(' + pks.join(', ') + ')';
+					}
+
+					output += '\n)\n\n';
 				}
-
-				output += '<br/>)<br/><br/>';
 			});
 
 			// Ajouter les constrantes de références et générer une table de dépendances
@@ -525,9 +657,11 @@
 				}
 				depTable.push(referencedTable.attr('id'));
 
-				output += 'ALTER TABLE ' + tableName + '<br/>';
-				output += 'ADD CONSTRAINT fk_' + tableName + '_' + columnName + ' FOREIGN KEY(' + columnName
-					+ ') REFERENCES ' + referencedTableName + '(' + referencedColumnName + ') <br/><br/>';
+				if (createTable()) {
+					output += 'ALTER TABLE ' + tableName + '\n';
+					output += 'ADD CONSTRAINT fk_' + tableName + '_' + columnName + ' FOREIGN KEY(' + columnName
+						+ ') REFERENCES ' + referencedTableName + '(' + referencedColumnName + ') \n\n';
+				}
 			}
 
 			// Trier les tables par dépendances (celles sans dépendances vient avant)
@@ -601,7 +735,7 @@
 				// Ne rien faire dans cette itération s'il n'y a aucune donnée à générer
 				if (entryCount == 0 || entries[tableID].length == 0) continue;
 
-				output += 'INSERT INTO ' + tableName + ' VALUES<br/>&nbsp;&nbsp;&nbsp;&nbsp;';
+				output += 'INSERT INTO ' + tableName + ' VALUES\n&nbsp;&nbsp;&nbsp;&nbsp;';
 
 				var entryList = [];
 				for (var i = 0; i < entryCount; ++i) {
@@ -615,7 +749,7 @@
 					entryList.push('(' + entry.join(', ') + ')');
 				}
 
-				output += entryList.join(',<br/>&nbsp;&nbsp;&nbsp;&nbsp;') + '<br/><br/>';
+				output += entryList.join(',\n&nbsp;&nbsp;&nbsp;&nbsp;') + '\n\n';
 			}
 
 			$('#output').html(output);
