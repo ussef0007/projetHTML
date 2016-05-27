@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript" src="jquery-1.12.2.min.js"></script>
+</head>
+<body>
+<form>
+	<label><input name="test" type="checkbox" value="c++"/> C++</label>
+	<label><input name="test" type="checkbox" value="c#"/> C#</label>
+	<label><input name="test" type="checkbox" value="java"/> Java</label>
+	<label><input name="test" type="checkbox" value="javascript"/> Javascript</label>
+	<label><input name="test" type="checkbox" value="html"/> HTML</label>
+	<label><input name="test" type="checkbox" value="pascal"/> PASCAL</label>
+	<input type="button" value="Tester" id="btn"/>
+</form>
+<script type="text/javascript">
+	$('#btn').click(function() {
+		var checked = $('input[name=test]:checked');
+		var indexDernier = checked.length - 1;
+		var str = '';
+		for (var n = 0; n < checked.length; ++n) {
+			var val = checked[n].value;
+			if (n == 0) {
+				str += val;
+			}
+			else if (n == indexDernier) {
+				str += ' et ' + val;
+			}
+			else {
+				str += ', ' + val;
+			}
+		}
+
+		document.write(str);
+	});
+</script>
+</body>
+</html>

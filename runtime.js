@@ -127,7 +127,8 @@
 	// Fonction d'aide pour ajouter des zéros au début des nombres
 	function pad(n, width) {
 		n = n + ''; // to string
-		return n >= width ? n : new Array(width - n.length + 1).join(0) + n;
+		while (n.length < width) n = '0' + n;
+		return n;
 	}
 
 	// Fonction pour ajouter une nouvelle table
@@ -408,7 +409,7 @@
 
 		for (var i = 0; i < count; ++i) {
 			var date = new Date(+min + ~~(Math.random() * (max - min)));
-			entries[i] = '' + pad((1900 + date.getYear()), 4) + pad(date.getMonth(), 2) + pad(date.getDate(), 2);
+			entries[i] = '"' + pad(date.getMonth(), 2) + "/" + pad(date.getDate(), 2) + "/" + pad((1900 + date.getYear()), 4) + "'";
 		}
 
 		return entries;
@@ -419,8 +420,8 @@
 
 		for (var i = 0; i < count; ++i) {
 			var date = new Date(+min + ~~(Math.random() * (max - min)));
-			entries[i] = '' + pad((1900 + date.getYear()), 4) + pad(date.getMonth(), 2) + pad(date.getDate(), 2)
-				+ ' ' + pad(date.getHours(), 2) + ':' + pad(date.getMinutes(), 2) + ':' + pad(date.getSeconds(), 2);
+			entries[i] = "'" + pad(date.getMonth(), 2) + "/" + pad(date.getDate(), 2) + "/" + pad((1900 + date.getYear()), 4)
+				+ ' ' + pad(date.getHours(), 2) + ':' + pad(date.getMinutes(), 2) + ':' + pad(date.getSeconds(), 2) + "'";
 		}
 
 		return entries;
@@ -488,8 +489,8 @@
 			return dateGen(count, (min == '') ? new Date() : new Date(min), (max == '') ? new Date() : new Date(max));
 		}
 		else if (type == 'datetime') {
-			var min = new Date(column.find('.min').val());
-			var max = new Date(column.find('.max').val());
+			var min = column.find('.min').val();
+			var max = column.find('.max').val();
 
 			return dateTimeGen(count, (min == '') ? new Date() : new Date(min), (max == '') ? new Date() : new Date(max));
 		}
