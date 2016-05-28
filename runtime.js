@@ -409,7 +409,7 @@
 
 		for (var i = 0; i < count; ++i) {
 			var date = new Date(+min + ~~(Math.random() * (max - min)));
-			entries[i] = "'" + pad(date.getMonth(), 2) + "/" + pad(date.getDate(), 2) + "/" + pad((1900 + date.getYear()), 4) + "'";
+			entries[i] = "'" + pad(date.getMonth() + 1, 2) + "/" + pad(date.getDate(), 2) + "/" + pad((1900 + date.getYear()), 4) + "'";
 		}
 
 		return entries;
@@ -420,7 +420,7 @@
 
 		for (var i = 0; i < count; ++i) {
 			var date = new Date(+min + ~~(Math.random() * (max - min)));
-			entries[i] = "'" + pad(date.getMonth(), 2) + "/" + pad(date.getDate(), 2) + "/" + pad((1900 + date.getYear()), 4)
+			entries[i] = "'" + pad(date.getMonth() + 1, 2) + "/" + pad(date.getDate(), 2) + "/" + pad((1900 + date.getYear()), 4)
 				+ ' ' + pad(date.getHours(), 2) + ':' + pad(date.getMinutes(), 2) + ':' + pad(date.getSeconds(), 2) + "'";
 		}
 
