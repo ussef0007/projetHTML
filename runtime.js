@@ -498,7 +498,7 @@
 			var refTable = column.find('.table-list').val();
 			var refCol = column.find('.column-list').val();
 			var sequencial = column.find('.sequencial').prop('checked');
-			var isNull = column.find('.null input').prop('checked');
+			var isNull = column.find('.null input').prop('checked') && !column.find('.pk input').prop('checked');
 
 			return refGen(currentEntries, count, refTable, refCol, sequencial, isNull);
 		}
