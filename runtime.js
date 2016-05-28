@@ -427,12 +427,16 @@
 		return entries;
 	}
 
-	function refGen(current, count, tableID, columnID, sequencial, isNull) {
+	function refGen(current, count, tableID, columnID, sequencial, isNull, isPk) {
 		var entries = new Array(count);
 
 		var targetTable = $('#' + tableID);
 		var targetColumn = $('#' + columnID);
 		var targetEntryCount = parseInt(targetTable.find('.entry-count').val());
+
+		if (isPk && count > targetEntryCount) {
+			throw 'Le nombre des éléments referencés par une clé primaire doit être supérieur au nombre d\'éléments générés';
+		}
 
 		var idx = targetColumn.index();
 
@@ -441,9 +445,23 @@
 				entries[i] = current[tableID][idx][i % targetEntryCount];
 			}
 		}
+		else if (isPk) {
+			// Si clé primaire faut méler les valeurs référencés de façon unique
+			entries = current[tableID][idx].slice(0, count);
+
+			var currIndex = count, tempVal, randomIndex;
+
+			while (currIndex > 0) {
+				randomIndex = Math.floor(Math.random() * currIndex--);
+
+				tempVal = entries[currIndex];
+				entries[currIndex] = entries[randomIndex];
+				entries[randomIndex] = tempVal;
+			}
+		}
 		else {
 			for (var i = 0; i < count; ++i) {
-				var index = ~~rand(0, targetEntryCount * (isNull ? 2 : 1));
+				var index = ~~rand(0, targetEntryCount * ((isNull && !isPk) ? 2 : 1));
 				entries[i] = (index >= current[tableID][idx].length) ? 'NULL' : current[tableID][idx][index];
 			}
 		}
@@ -498,9 +516,10 @@
 			var refTable = column.find('.table-list').val();
 			var refCol = column.find('.column-list').val();
 			var sequencial = column.find('.sequencial').prop('checked');
-			var isNull = column.find('.null input').prop('checked') && !column.find('.pk input').prop('checked');
+			var isNull = column.find('.null input').prop('checked');
+			var isPk = column.find('.pk input').prop('checked');
 
-			return refGen(currentEntries, count, refTable, refCol, sequencial, isNull);
+			return refGen(currentEntries, count, refTable, refCol, sequencial, isNull, isPk);
 		}
 		else {
 			return [];
@@ -594,7 +613,7 @@
 		});
 	})
 	.on('click', '.build', function() {
-		// try {
+		try {
 			var output = '';
 
 			var references = {};
@@ -762,14 +781,14 @@
 			}
 
 			$('#output').html(output);
-		// }
-		// catch(err) {
-		// 	if (err instanceof RangeError) {
-		// 		alert('Une erreur a survenu :\n' + err + '\n\nVérifiez s\'il y a un cycle de références.');
-		// 	}
-		// 	else {
-		// 		alert('Une erreur a survenu :\n' + err);
-		// 	}
-		// }
+		}
+		catch(err) {
+			if (err instanceof RangeError) {
+				alert('Une erreur a survenu :\n' + err + '\n\nVérifiez s\'il y a un cycle de références.');
+			}
+			else {
+				alert('Une erreur a survenu :\n' + err);
+			}
+		}
 	});
 })();
